@@ -1,6 +1,6 @@
 {
   "name": "@datashift/sdk",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Datashift SDK for human-in-the-loop AI agent workflows",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
