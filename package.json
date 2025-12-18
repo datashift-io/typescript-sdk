@@ -1,6 +1,6 @@
 {
   "name": "@datashift/sdk",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Datashift SDK for human-in-the-loop AI agent workflows",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -36,7 +36,7 @@
     "type": "git",
     "url": "https://github.com/datashift-io/typescript-sdk.git"
   },
-  "homepage": "https://github.com/datashift-io/typescript-sdk#readme",
+  "homepage": "https://datashift.io",
   "bugs": {
     "url": "https://github.com/datashift-io/typescript-sdk/issues"
   },
