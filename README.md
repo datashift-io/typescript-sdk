@@ -4,8 +4,7 @@ TypeScript SDK for integrating human-in-the-loop checkpoints into AI agent workf
 
 ## Overview
 
-Datashift enables AI agents to submit tasks for further review. Reviewers can be
-humans, AI, or a combination of both.
+Datashift enables AI agents to submit tasks for human review before committing changes. Perfect for data enrichment workflows where AI agents enhance CRM and database records with external data, and reviewers verify accuracy before updates are applied.
 
 ## Installation
 
@@ -22,20 +21,37 @@ const datashift = new DatashiftRestClient({
     apiKey: process.env.DATASHIFT_API_KEY!,
 });
 
-// Submit a task
+// AI agent enriches company data from external sources
+const enrichedData = {
+    companyId: 'acme_corp_123',
+    original: {name: 'Acme Corp', industry: 'Unknown'},
+    enriched: {
+        name: 'Acme Corporation',
+        industry: 'Manufacturing',
+        employees: 5200,
+        revenue: '$1.2B',
+        linkedIn: 'https://linkedin.com/company/acme',
+    },
+    sources: ['LinkedIn', 'Crunchbase', 'SEC Filings'],
+};
+
+// Submit enrichment for human verification before updating CRM
 const task = await datashift.task.submit({
-    queueKey: 'content-moderation',
-    data: {contentId: 'post_456', text: 'User generated content...'},
-    summary: 'Review flagged content',
+    queueKey: 'data-enrichment',
+    data: enrichedData,
+    summary: 'Verify Acme Corp enrichment before CRM update',
 });
 
-// Poll for completion
-const completed = await datashift.task.waitForReview(task.id, {
+// Wait for reviewer approval
+const result = await datashift.task.waitForReview(task.id, {
     timeout: 300000,    // 5 minutes
     pollInterval: 5000, // Check every 5 seconds
 });
 
-// Or use webhooks for async notification (see Webhooks section)
+// Apply verified changes to CRM
+if (result.result.includes('approved')) {
+    await updateCRM(enrichedData.companyId, enrichedData.enriched);
+}
 ```
 
 ## Authentication
