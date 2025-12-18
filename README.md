@@ -56,12 +56,11 @@ if (result.result.includes('approved')) {
 
 ## Authentication
 
-Create an API key in the Datashift Console.
+Create an API key in the [Datashift Console](https://datashift.io).
 
 ```typescript
 const datashift = new DatashiftRestClient({
-    apiKey: 'sk_live_...', // Production key
-    // apiKey: 'sk_test_...', // Test key
+    apiKey: 'sk_live_...'
 });
 ```
 
