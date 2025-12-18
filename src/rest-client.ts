@@ -27,7 +27,7 @@ const DEFAULT_RETRY_DELAY = 1000;
  * @example
  * ```typescript
  * const datashift = new DatashiftRestClient({
- *   apiKey: 'sk_live_...',
+ *   apiKey: 'sk_...',
  * });
  *
  * const task = await datashift.task.submit({

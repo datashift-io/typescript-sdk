@@ -18,8 +18,8 @@ export function validateApiKey(apiKey: string): void {
     throw new Error('API key is required');
   }
 
-  if (!apiKey.startsWith('sk_live_') && !apiKey.startsWith('sk_test_')) {
-    throw new Error('Invalid API key format. Expected sk_live_* or sk_test_*');
+  if (!apiKey.startsWith('sk_')) {
+    throw new Error('Invalid API key format. Expected sk_');
   }
 }
 
