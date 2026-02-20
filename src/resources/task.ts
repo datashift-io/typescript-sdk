@@ -42,7 +42,7 @@ export class TaskResource {
   /**
    * Get task status
    */
-  async getStatus(taskId: string): Promise<TaskStatus> {
+  private async getStatus(taskId: string): Promise<TaskStatus> {
     const response = await this.client.get<TaskStatus>(`/task/${taskId}/status`);
     return response.data;
   }
@@ -71,7 +71,7 @@ export class TaskResource {
     while (Date.now() - startTime < opts.timeout) {
       const status = await this.getStatus(taskId);
 
-      if (status.state === 'completed') {
+      if (status.state === 'reviewed') {
         // Fetch full task with reviews
         return this.get(taskId);
       }
@@ -84,7 +84,7 @@ export class TaskResource {
     }
 
     throw new TimeoutError(
-      `Task ${taskId} was not completed within ${opts.timeout}ms`,
+      `Task ${taskId} was not reviewed within ${opts.timeout}ms`,
     );
   }
 

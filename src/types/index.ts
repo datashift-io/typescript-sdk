@@ -1,5 +1,5 @@
 // Task types
-export type TaskState = 'pending' | 'queued' | 'completed';
+export type TaskState = 'pending' | 'queued' | 'reviewed';
 
 export interface Task {
   id: string;
@@ -12,7 +12,7 @@ export interface Task {
   metadata: Record<string, unknown>;
   summary: string | null;
   sla_deadline: string | null;
-  completed_at: string | null;
+  reviewed_at: string | null;
   created_at: string;
   updated_at: string;
   queue?: Queue;
@@ -21,7 +21,7 @@ export interface Task {
 
 export interface TaskStatus {
   state: TaskState;
-  completed_at: string | null;
+  reviewed_at: string | null;
 }
 
 export interface SubmitTaskInput {
@@ -103,11 +103,11 @@ export interface WaitOptions {
   maxPollInterval?: number;
 }
 
-// Review result (returned by waitForCompletion)
+// Review result (returned by waitForReview)
 export interface ReviewResult {
   task_id: string;
   result: string[];
   data: Record<string, unknown>;
-  completed_at: string;
+  reviewed_at: string;
   review: Review;
 }

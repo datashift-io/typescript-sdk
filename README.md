@@ -4,7 +4,7 @@ TypeScript SDK for integrating human-in-the-loop checkpoints into AI agent workf
 
 ## Overview
 
-Datashift enables AI agents to submit tasks for human review before committing changes. Perfect for data enrichment workflows where AI agents enhance CRM and database records with external data, and reviewers verify accuracy before updates are applied.
+Datashift enables AI agents to submit tasks for human review before committing changes.
 
 ## Installation
 
@@ -79,17 +79,14 @@ const task = await datashift.task.submit({
 // Get task by ID
 const task = await datashift.task.get(taskId);
 
-// Get task status (lightweight)
-const status = await datashift.task.getStatus(taskId);
-
 // List tasks
 const tasks = await datashift.task.list({
     queueId?: string;
-    state?: 'pending' | 'queued' | 'completed';
+    state?: 'pending' | 'queued' | 'reviewed';
 });
 
 // Wait for review
-const completed = await datashift.task.waitForReview(taskId, {
+const reviewed = await datashift.task.waitForReview(taskId, {
     timeout: 300000,       // 5 minutes
     pollInterval: 2000,    // Start at 2s
     maxPollInterval: 30000 // Back off to 30s
@@ -127,7 +124,7 @@ const review = await datashift.review.get(reviewId);
 // Create webhook
 const webhook = await datashift.webhook.create({
     url: 'https://your-service.com/webhook',
-    events: ['task.completed'],
+    events: ['task.reviewed'],
 });
 // Save webhook.secret securely!
 
@@ -137,7 +134,7 @@ const webhooks = await datashift.webhook.list();
 // Update webhook
 const updated = await datashift.webhook.update(webhookId, {
     url: 'https://new-url.com/webhook',
-    events: ['task.completed', 'task.created'],
+    events: ['task.reviewed', 'task.created'],
     active: true,
 });
 
@@ -154,7 +151,7 @@ await datashift.webhook.delete(webhookId);
 
 ## Webhooks
 
-Webhooks provide async notifications when tasks are completed.
+Webhooks provide async notifications when tasks are reviewed.
 
 ### Setting Up a Webhook Endpoint
 
@@ -179,9 +176,9 @@ app.post('/webhook/datashift',
         // Parse event
         const event = parseWebhookEvent<WebhookEvent>(req.body);
 
-        if (event.event === 'task.completed') {
+        if (event.event === 'task.reviewed') {
             const {task_id, result, review} = event.data;
-            handleTaskCompleted(task_id, result, review);
+            handleTaskReviewed(task_id, result, review);
         }
 
         res.status(200).send('OK');
@@ -193,7 +190,7 @@ app.post('/webhook/datashift',
 
 | Event            | Description                    |
 |------------------|--------------------------------|
-| `task.completed` | Task review has been completed |
+| `task.reviewed` | Task has been reviewed |
 
 ### Webhook Payload
 
@@ -220,13 +217,13 @@ interface Task {
     id: string;
     queue_id: string;
     external_id: string | null;
-    state: 'pending' | 'queued' | 'completed';
+    state: 'pending' | 'queued' | 'reviewed';
     data: Record<string, unknown>;
     context: Record<string, unknown>;
     metadata: Record<string, unknown>;
     summary: string | null;
     sla_deadline: string | null;
-    completed_at: string | null;
+    reviewed_at: string | null;
     created_at: string;
     updated_at: string;
     reviews?: Review[];
@@ -285,7 +282,7 @@ interface ReviewResult {
     task_id: string;
     result: string[];
     data: Record<string, unknown>;
-    completed_at: string;
+    reviewed_at: string;
     review: Review;
 }
 ```
@@ -309,7 +306,7 @@ try {
     const result = await datashift.task.waitForReview(taskId, {timeout: 60000});
 } catch (error) {
     if (error instanceof TimeoutError) {
-        console.log('Review not completed in time');
+        console.log('Review not finished in time');
     } else if (error instanceof AuthenticationError) {
         console.log('Invalid credentials');
     } else if (error instanceof NotFoundError) {
@@ -385,7 +382,7 @@ app.post('/webhook/datashift',
 
         const event = parseWebhookEvent<WebhookEvent>(req.body);
 
-        if (event.event === 'task.completed') {
+        if (event.event === 'task.reviewed') {
             const resolver = pendingTasks.get(event.data.task_id);
             if (resolver) {
                 resolver(event.data);
