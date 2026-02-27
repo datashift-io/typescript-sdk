@@ -28,6 +28,14 @@ export type {
   Review,
   ReviewResult,
   ListReviewsFilters,
+  // Webhook events
+  WebhookEvent,
+  WebhookEventType,
+  WebhookTaskData,
+  WebhookQueueData,
+  WebhookReviewData,
+  TaskCreatedWebhookEvent,
+  TaskReviewedWebhookEvent,
   // Config
   RestClientConfig,
   WaitOptions,

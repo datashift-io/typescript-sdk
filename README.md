@@ -177,8 +177,13 @@ app.post('/webhook/datashift',
         const event = parseWebhookEvent<WebhookEvent>(req.body);
 
         if (event.event === 'task.reviewed') {
-            const {task_id, result, review} = event.data;
-            handleTaskReviewed(task_id, result, review);
+            const {task, queue, reviews} = event.data;
+            console.log(`Task ${task.id} in queue ${queue.key} reviewed`);
+            console.log(`Result: ${reviews[0].result}`);
+            console.log(`Reviewer: ${reviews[0].reviewer.name}`);
+        } else if (event.event === 'task.created') {
+            const {task, queue} = event.data;
+            console.log(`Task ${task.id} created in queue ${queue.key}`);
         }
 
         res.status(200).send('OK');
@@ -190,22 +195,61 @@ app.post('/webhook/datashift',
 
 | Event            | Description                    |
 |------------------|--------------------------------|
-| `task.reviewed` | Task has been reviewed |
+| `task.created`  | A new task was submitted for review |
+| `task.reviewed` | A task has been reviewed (includes all reviews) |
 
-### Webhook Payload
+### Webhook Payloads
 
 ```typescript
-interface WebhookEvent {
-    event: string;      // Event type
-    timestamp: string;  // ISO 8601 timestamp
+// task.created
+interface TaskCreatedWebhookEvent {
+    event: 'task.created';
+    timestamp: string;
     data: {
-        task_id: string;
-        queue_key: string;
-        state: string;
-        result: string[];
-        review?: Review;
+        task: WebhookTaskData;
+        queue: WebhookQueueData;
     };
 }
+
+// task.reviewed
+interface TaskReviewedWebhookEvent {
+    event: 'task.reviewed';
+    timestamp: string;
+    data: {
+        task: WebhookTaskData;
+        queue: WebhookQueueData;
+        reviews: WebhookReviewData[];  // All reviews (supports two-step workflows)
+    };
+}
+
+interface WebhookTaskData {
+    id: string;
+    external_id: string | null;
+    state: string;
+    summary: string | null;
+    data: Record<string, unknown>;
+    metadata: Record<string, unknown>;
+    sla_deadline: string | null;
+    reviewed_at: string | null;
+    created_at: string;
+}
+
+interface WebhookQueueData {
+    key: string;
+    name: string;
+    review_type: string;
+}
+
+interface WebhookReviewData {
+    result: string[];
+    data: Record<string, unknown>;
+    comment: string | null;
+    reviewer: { name: string; type: string };
+    created_at: string;
+}
+
+// Union type for all webhook events
+type WebhookEvent = TaskCreatedWebhookEvent | TaskReviewedWebhookEvent;
 ```
 
 ## Types
@@ -383,10 +427,10 @@ app.post('/webhook/datashift',
         const event = parseWebhookEvent<WebhookEvent>(req.body);
 
         if (event.event === 'task.reviewed') {
-            const resolver = pendingTasks.get(event.data.task_id);
+            const resolver = pendingTasks.get(event.data.task.id);
             if (resolver) {
                 resolver(event.data);
-                pendingTasks.delete(event.data.task_id);
+                pendingTasks.delete(event.data.task.id);
             }
         }
 

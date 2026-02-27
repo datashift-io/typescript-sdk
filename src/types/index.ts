@@ -111,3 +111,53 @@ export interface ReviewResult {
   reviewed_at: string;
   review: Review;
 }
+
+// Webhook event types
+export type WebhookEventType = 'task.created' | 'task.reviewed';
+
+export interface WebhookTaskData {
+  id: string;
+  external_id: string | null;
+  state: string;
+  summary: string | null;
+  data: Record<string, unknown>;
+  metadata: Record<string, unknown>;
+  sla_deadline: string | null;
+  reviewed_at: string | null;
+  created_at: string;
+}
+
+export interface WebhookQueueData {
+  key: string;
+  name: string;
+  review_type: string;
+}
+
+export interface WebhookReviewData {
+  result: string[];
+  data: Record<string, unknown>;
+  comment: string | null;
+  reviewer: { name: string; type: string };
+  created_at: string;
+}
+
+export interface TaskCreatedWebhookEvent {
+  event: 'task.created';
+  timestamp: string;
+  data: {
+    task: WebhookTaskData;
+    queue: WebhookQueueData;
+  };
+}
+
+export interface TaskReviewedWebhookEvent {
+  event: 'task.reviewed';
+  timestamp: string;
+  data: {
+    task: WebhookTaskData;
+    queue: WebhookQueueData;
+    reviews: WebhookReviewData[];
+  };
+}
+
+export type WebhookEvent = TaskCreatedWebhookEvent | TaskReviewedWebhookEvent;
