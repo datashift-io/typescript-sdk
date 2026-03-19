@@ -1,10 +1,13 @@
 # @datashift/sdk
 
+[![npm version](https://img.shields.io/npm/v/@datashift/sdk)](https://www.npmjs.com/package/@datashift/sdk)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+
 TypeScript SDK for integrating human-in-the-loop checkpoints into AI agent workflows.
 
 ## Overview
 
-Datashift enables AI agents to submit tasks for human review before committing changes.
+[Datashift](https://datashift.io) enables AI agents to submit tasks for human review before committing changes. Create review queues, define review types (approval, classification, labeling, scoring, augmentation), and integrate human oversight into any AI workflow — via [REST API](https://datashift.io/docs/api) or [MCP](https://datashift.io/docs/mcp).
 
 ## Installation
 
@@ -445,6 +448,14 @@ app.listen(3000);
 
 - Node.js 18+
 - TypeScript 5.0+ (for type definitions)
+
+## Resources
+
+- [Datashift Website](https://datashift.io) — Product overview and sign up
+- [Documentation](https://datashift.io/docs) — Guides, API reference, and examples
+- [MCP Server](https://datashift.io/docs/mcp) — Connect AI agents via Model Context Protocol
+- [Console](https://console.datashift.io) — Manage queues, reviewers, and API keys
+- [GitHub](https://github.com/datashift-io) — SDKs and sample projects
 
 ## License
 

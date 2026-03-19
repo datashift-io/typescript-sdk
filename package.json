@@ -26,9 +26,17 @@
   "keywords": [
     "datashift",
     "ai",
+    "ai-agents",
     "agents",
     "human-in-the-loop",
-    "hitl"
+    "hitl",
+    "llm",
+    "review-workflow",
+    "model-context-protocol",
+    "mcp",
+    "automation",
+    "content-moderation",
+    "approval-workflow"
   ],
   "author": "Datashift",
   "license": "MIT",
