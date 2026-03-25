@@ -73,7 +73,7 @@ export interface Review {
   reviewer_id: string | null;
   result: string[];
   data: Record<string, unknown>;
-  comment: string | null;
+  feedback: string | null;
   created_at: string;
 }
 
@@ -136,7 +136,7 @@ export interface WebhookQueueData {
 export interface WebhookReviewData {
   result: string[];
   data: Record<string, unknown>;
-  comment: string | null;
+  feedback: string | null;
   reviewer: { name: string; type: string };
   created_at: string;
 }
