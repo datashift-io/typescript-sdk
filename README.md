@@ -232,6 +232,8 @@ interface WebhookTaskData {
     summary: string | null;
     data: Record<string, unknown>;
     metadata: Record<string, unknown>;
+    choices: TaskChoice[] | null;     // multiple_choice queues only
+    max_selections: number | null;    // per-task override; multiple_choice only
     sla_deadline: string | null;
     reviewed_at: string | null;
     created_at: string;

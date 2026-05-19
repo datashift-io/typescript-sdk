@@ -141,6 +141,10 @@ export interface WebhookTaskData {
   summary: string | null;
   data: Record<string, unknown>;
   metadata: Record<string, unknown>;
+  // Per-task choices for multiple_choice queues; null otherwise.
+  choices: TaskChoice[] | null;
+  // Per-task max_selections override for multiple_choice queues; null otherwise.
+  max_selections: number | null;
   sla_deadline: string | null;
   reviewed_at: string | null;
   created_at: string;
