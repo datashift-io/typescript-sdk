@@ -27,6 +27,8 @@ export class TaskResource {
       metadata: input.metadata ?? {},
       summary: input.summary,
       external_id: input.externalId,
+      choices: input.choices,
+      max_selections: input.maxSelections,
     });
     return response.data;
   }

@@ -1,6 +1,14 @@
 // Task types
 export type TaskState = 'pending' | 'queued' | 'reviewed';
 
+export interface TaskChoice {
+  key: string;
+  label: string;
+  description?: string | null;
+  // Structured per-choice fields (e.g., address/EIN for an entity-match candidate).
+  data?: Record<string, unknown> | null;
+}
+
 export interface Task {
   id: string;
   organization_id: string;
@@ -10,6 +18,8 @@ export interface Task {
   data: Record<string, unknown>;
   context: Record<string, unknown>;
   metadata: Record<string, unknown>;
+  choices: TaskChoice[] | null;
+  max_selections: number | null;
   summary: string | null;
   sla_deadline: string | null;
   reviewed_at: string | null;
@@ -31,6 +41,10 @@ export interface SubmitTaskInput {
   metadata?: Record<string, unknown>;
   summary?: string;
   externalId?: string;
+  // Required for queues with review_type='multiple_choice'; rejected on other types.
+  choices?: TaskChoice[];
+  // Per-task upper bound on selections; MC only. Overrides queue.max_selections.
+  maxSelections?: number;
 }
 
 // Queue types
@@ -38,8 +52,11 @@ export type ReviewType =
   | 'approval'
   | 'labeling'
   | 'classification'
+  | 'multiple_choice'
   | 'scoring'
   | 'augmentation';
+
+export type FeedbackRequired = 'never' | 'always' | 'when_empty';
 
 export type AssignmentStrategy = 'manual' | 'round_robin' | 'ai_first' | 'ai_last';
 
@@ -57,7 +74,9 @@ export interface Queue {
   description: string | null;
   review_type: ReviewType;
   review_options: ReviewOption[];
-  multi_select: boolean;
+  max_selections: number | null;
+  result_required: boolean;
+  feedback_required: FeedbackRequired;
   assignment: AssignmentStrategy;
   sla_minutes: number | null;
   deleted_at: string | null;
