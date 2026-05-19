@@ -7,7 +7,7 @@ TypeScript SDK for integrating human-in-the-loop checkpoints into AI agent workf
 
 ## Overview
 
-[Datashift](https://datashift.io) enables AI agents to submit tasks for human review before committing changes. Create review queues, define review types (approval, classification, labeling, scoring, augmentation), and integrate human oversight into any AI workflow — via [REST API](https://datashift.io/docs/api) or [MCP](https://datashift.io/docs/mcp).
+[Datashift](https://datashift.io) enables AI agents to submit tasks for human review before committing changes. Create review queues, define review types (approval, classification, labeling, multiple_choice, scoring, augmentation), and integrate human oversight into any AI workflow — via [REST API](https://datashift.io/docs/api) or [MCP](https://datashift.io/docs/mcp).
 
 ## Installation
 
@@ -246,7 +246,7 @@ interface WebhookQueueData {
 interface WebhookReviewData {
     result: string[];
     data: Record<string, unknown>;
-    comment: string | null;
+    feedback: string | null;
     reviewer: { name: string; type: string };
     created_at: string;
 }
@@ -268,12 +268,23 @@ interface Task {
     data: Record<string, unknown>;
     context: Record<string, unknown>;
     metadata: Record<string, unknown>;
+    choices: TaskChoice[] | null;     // multiple_choice queues only
+    max_selections: number | null;    // per-task override; multiple_choice only
     summary: string | null;
     sla_deadline: string | null;
     reviewed_at: string | null;
     created_at: string;
     updated_at: string;
     reviews?: Review[];
+}
+
+interface TaskChoice {
+    key: string;
+    label: string;
+    description?: string | null;
+    // Structured per-choice fields the viewer can render alongside the label
+    // (e.g., address/EIN for an entity-match candidate).
+    data?: Record<string, unknown> | null;
 }
 ```
 
@@ -285,13 +296,58 @@ interface Queue {
     key: string;
     name: string;
     description: string | null;
-    review_type: 'approval' | 'labeling' | 'classification' | 'scoring' | 'augmentation';
+    review_type:
+        | 'approval'
+        | 'labeling'
+        | 'classification'
+        | 'multiple_choice'
+        | 'scoring'
+        | 'augmentation';
     review_options: ReviewOption[];
+    // Selection primitives. review_type sets sensible defaults; explicit
+    // values override.
+    max_selections: number | null;   // 1 = single-select, null = unbounded
+    result_required: boolean;        // if false, empty selection is valid
+    feedback_required: 'never' | 'always' | 'when_empty';
     assignment: 'manual' | 'round_robin' | 'ai_first';
     sla_minutes: number | null;
     deleted_at: string | null;
 }
 ```
+
+#### Multiple choice
+
+Use `review_type: 'multiple_choice'` when the candidate list varies per
+task (e.g., entity matching, output ranking, picking the best of N
+generated drafts). Ship the candidates with the task instead of the
+queue:
+
+```typescript
+await datashift.task.submit({
+    queueKey: 'entity-match',
+    summary: 'Verify business identity',
+    data: { name: 'ACME Plumbing LLC', ein: '12-3456789' },
+    choices: [
+        {
+            key: 'cand_1',
+            label: 'ACME Plumbing LLC',
+            description: 'EIN 12-3456789',
+            data: { address: '100 Main St, Austin TX', confidence: 0.92 },
+        },
+        {
+            key: 'cand_2',
+            label: 'Acme Plumbing Inc',
+            description: 'EIN 11-2233445',
+            data: { address: '220 Oak St, Houston TX', confidence: 0.71 },
+        },
+    ],
+});
+```
+
+If none of the candidates is a real match, the reviewer can submit an
+empty result. Configure the queue with `result_required: false` and
+`feedback_required: 'when_empty'` to require an explanation in that case;
+no reserved `__none__` key needed.
 
 ### Review
 
@@ -302,7 +358,7 @@ interface Review {
     reviewer_id: string | null;
     result: string[];
     data: Record<string, unknown>;
-    comment: string | null;
+    feedback: string | null;
     created_at: string;
 }
 ```
