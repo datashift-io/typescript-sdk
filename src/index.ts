@@ -8,6 +8,7 @@ export {
   NotFoundError,
   ValidationError,
   TimeoutError,
+  TaskCanceledError,
   RateLimitError,
   ServerError,
 } from './errors.js';

@@ -1,3 +1,5 @@
+import type { Task } from './types/index.js';
+
 /**
  * Base error class for all Datashift SDK errors
  */
@@ -55,6 +57,16 @@ export class TimeoutError extends DatashiftError {
   constructor(message = 'Operation timed out') {
     super(message, 408, 'TIMEOUT');
     this.name = 'TimeoutError';
+  }
+}
+
+/**
+ * Thrown by `waitForReview` when the task is canceled before it is reviewed
+ */
+export class TaskCanceledError extends DatashiftError {
+  constructor(public task: Task) {
+    super(`Task ${task.id} was canceled before it was reviewed`, 409, 'TASK_CANCELED', task);
+    this.name = 'TaskCanceledError';
   }
 }
 

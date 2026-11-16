@@ -85,7 +85,7 @@ const task = await datashift.task.get(taskId);
 // List tasks
 const tasks = await datashift.task.list({
     queueId?: string;
-    state?: 'pending' | 'queued' | 'reviewed';
+    state?: 'pending' | 'queued' | 'reviewed' | 'canceled';
 });
 
 // Wait for review
@@ -95,6 +95,8 @@ const reviewed = await datashift.task.waitForReview(taskId, {
     maxPollInterval: 30000 // Back off to 30s
 });
 ```
+
+`waitForReview` throws `TaskCanceledError` if the task is canceled before it is reviewed, and `TimeoutError` if no review arrives within `timeout`.
 
 ### Queue Operations
 
@@ -266,7 +268,7 @@ interface Task {
     id: string;
     queue_id: string;
     external_id: string | null;
-    state: 'pending' | 'queued' | 'reviewed';
+    state: 'pending' | 'queued' | 'reviewed' | 'canceled';
     data: Record<string, unknown>;
     context: Record<string, unknown>;
     metadata: Record<string, unknown>;
@@ -275,6 +277,7 @@ interface Task {
     summary: string | null;
     sla_deadline: string | null;
     reviewed_at: string | null;
+    canceled_at: string | null;
     created_at: string;
     updated_at: string;
     reviews?: Review[];
@@ -403,6 +406,7 @@ import {
     NotFoundError,
     ValidationError,
     TimeoutError,
+    TaskCanceledError,
     RateLimitError,
     ServerError,
 } from '@datashift/sdk';
@@ -412,6 +416,8 @@ try {
 } catch (error) {
     if (error instanceof TimeoutError) {
         console.log('Review not finished in time');
+    } else if (error instanceof TaskCanceledError) {
+        console.log(`Task canceled at ${error.task.canceled_at}`);
     } else if (error instanceof AuthenticationError) {
         console.log('Invalid credentials');
     } else if (error instanceof NotFoundError) {

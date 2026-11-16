@@ -5,7 +5,7 @@ import type {
   SubmitTaskInput,
   WaitOptions,
 } from '../types/index.js';
-import { TimeoutError } from '../errors.js';
+import { TaskCanceledError, TimeoutError } from '../errors.js';
 
 const DEFAULT_WAIT_OPTIONS: Required<WaitOptions> = {
   timeout: 300000, // 5 minutes
@@ -63,7 +63,10 @@ export class TaskResource {
   }
 
   /**
-   * Wait for a task to be reviewed
+   * Wait for a task to be reviewed.
+   *
+   * @throws {TaskCanceledError} If the task is canceled before it is reviewed.
+   * @throws {TimeoutError} If the task is not reviewed within `timeout`.
    */
   async waitForReview(taskId: string, options?: WaitOptions): Promise<Task> {
     const opts = { ...DEFAULT_WAIT_OPTIONS, ...options };
@@ -76,6 +79,10 @@ export class TaskResource {
       if (status.state === 'reviewed') {
         // Fetch full task with reviews
         return this.get(taskId);
+      }
+
+      if (status.state === 'canceled') {
+        throw new TaskCanceledError(await this.get(taskId));
       }
 
       // Wait before next poll

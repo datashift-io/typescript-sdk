@@ -1,5 +1,5 @@
 // Task types
-export type TaskState = 'pending' | 'queued' | 'reviewed';
+export type TaskState = 'pending' | 'queued' | 'reviewed' | 'canceled';
 
 export interface TaskChoice {
   key: string;
@@ -23,6 +23,7 @@ export interface Task {
   summary: string | null;
   sla_deadline: string | null;
   reviewed_at: string | null;
+  canceled_at: string | null;
   created_at: string;
   updated_at: string;
   queue?: Queue;
